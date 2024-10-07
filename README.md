@@ -56,85 +56,208 @@
 
 ## Перечень сущностей БД
 ```
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,                 -- Уникальный идентификатор пользователя
-  first_name VARCHAR(64),                -- Имя пользователя
-  last_name VARCHAR(64),                 -- Фамилия пользователя
-  email VARCHAR(100) UNIQUE,             -- Электронная почта (уникальная)
-  password VARCHAR(30),                  -- Пароль пользователя
-  basket_id INTEGER REFERENCES baskets(id),  -- Ссылка на корзину пользователя
-  role_id INTEGER REFERENCES roles(id),  -- Ссылка на роль пользователя
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Дата создания пользователя
+CREATE TABLE IF NOT EXISTS public.basket_items
+(
+    id serial NOT NULL,
+    car_id integer NOT NULL,
+    basket_id integer NOT NULL,
+    amount integer NOT NULL DEFAULT 1,
+    CONSTRAINT basket_items_pkey PRIMARY KEY (id)
 );
 
--- Таблица ролей
-CREATE TABLE roles (
-  id SERIAL PRIMARY KEY,                -- Уникальный идентификатор роли
-  role_name VARCHAR(30) NOT NULL DEFAULT 'user'  -- Название роли (по умолчанию 'user')
+CREATE TABLE IF NOT EXISTS public.baskets
+(
+    id serial NOT NULL,
+    user_id integer NOT NULL,
+    CONSTRAINT baskets_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_user UNIQUE (user_id)
 );
 
--- Таблица автомобилей
-CREATE TABLE cars (
-  id SERIAL PRIMARY KEY,                -- Уникальный идентификатор автомобиля
-  brand VARCHAR(50),                    -- Бренд автомобиля
-  model VARCHAR(100),                   -- Модель автомобиля
-  year INTEGER,                         -- Год выпуска
-  price DECIMAL(19, 2)                  -- Цена автомобиля
+CREATE TABLE IF NOT EXISTS public.brands
+(
+    id serial NOT NULL,
+    brand_name character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT brands_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_brand UNIQUE (brand_name)
 );
 
--- Таблица заказов
-CREATE TABLE orders (
-  id SERIAL PRIMARY KEY,                -- Уникальный идентификатор заказа
-  user_id INTEGER REFERENCES users(id), -- Ссылка на пользователя, сделавшего заказ
-  order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Дата заказа
-  price DECIMAL(19, 2)                  -- Цена заказа
+CREATE TABLE IF NOT EXISTS public.cars
+(
+    id serial NOT NULL,
+    model_id integer,
+    price numeric(19, 2),
+    year integer,
+    CONSTRAINT cars_pkey PRIMARY KEY (id)
 );
 
--- Таблица элементов заказа
-CREATE TABLE order_items (
-  id SERIAL PRIMARY KEY,                -- Уникальный идентификатор элемента заказа
-  car_id INTEGER REFERENCES cars(id),   -- Ссылка на автомобиль
-  order_id INTEGER REFERENCES orders(id),  -- Ссылка на заказ
-  amount INTEGER NOT NULL DEFAULT 1     -- Количество единиц товара (по умолчанию 1)
+CREATE TABLE IF NOT EXISTS public.images
+(
+    id serial NOT NULL,
+    car_id integer,
+    image_url character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    description character varying(30) COLLATE pg_catalog."default",
+    CONSTRAINT images_pkey PRIMARY KEY (id)
 );
 
--- Таблица корзин
-CREATE TABLE baskets (
-  id SERIAL PRIMARY KEY,                -- Уникальный идентификатор корзины
-  user_id INTEGER REFERENCES users(id)  -- Ссылка на пользователя, владеющего корзиной
+CREATE TABLE IF NOT EXISTS public.logs
+(
+    id serial NOT NULL,
+    user_id integer NOT NULL,
+    action character varying(20) COLLATE pg_catalog."default",
+    "timestamp" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT logs_pkey PRIMARY KEY (id)
 );
 
--- Таблица элементов корзины
-CREATE TABLE basket_items (
-  id SERIAL PRIMARY KEY,                -- Уникальный идентификатор элемента корзины
-  car_id INTEGER REFERENCES cars(id),   -- Ссылка на автомобиль
-  basket_id INTEGER REFERENCES baskets(id),  -- Ссылка на корзину
-  amount INTEGER NOT NULL DEFAULT 1     -- Количество единиц товара (по умолчанию 1)
+CREATE TABLE IF NOT EXISTS public.models
+(
+    id serial NOT NULL,
+    model_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    brand_id integer,
+    CONSTRAINT models_pkey PRIMARY KEY (id)
 );
 
--- Таблица отзывов
-CREATE TABLE reviews (
-  id SERIAL PRIMARY KEY,                -- Уникальный идентификатор отзыва
-  car_id INTEGER REFERENCES cars(id),   -- Ссылка на автомобиль
-  user_id INTEGER REFERENCES users(id), -- Ссылка на пользователя, оставившего отзыв
-  rating INTEGER NOT NULL,              -- Оценка отзыва
-  comment TEXT                          -- Текст отзыва
+CREATE TABLE IF NOT EXISTS public.order_items
+(
+    id serial NOT NULL,
+    car_id integer NOT NULL,
+    order_id integer NOT NULL,
+    amount integer NOT NULL DEFAULT 1,
+    CONSTRAINT order_items_pkey PRIMARY KEY (id)
 );
 
--- Таблица логов действий
-CREATE TABLE logs (
-  id SERIAL PRIMARY KEY,                -- Уникальный идентификатор лога
-  user_id INTEGER REFERENCES users(id), -- Ссылка на пользователя
-  action VARCHAR(15),                   -- Действие пользователя
-  timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP  -- Время выполнения действия
+CREATE TABLE IF NOT EXISTS public.orders
+(
+    id serial NOT NULL,
+    user_id integer NOT NULL,
+    order_date timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    price numeric(19, 2) NOT NULL,
+    CONSTRAINT orders_pkey PRIMARY KEY (id)
 );
 
--- Таблица изображений
-CREATE TABLE images (
-  id SERIAL PRIMARY KEY,                -- Уникальный идентификатор изображения
-  car_id INTEGER REFERENCES cars(id),   -- Ссылка на автомобиль
-  image_url VARCHAR(30)                 -- URL изображения автомобиля
+CREATE TABLE IF NOT EXISTS public.reviews
+(
+    id serial NOT NULL,
+    car_id integer NOT NULL,
+    user_id integer NOT NULL,
+    rating integer NOT NULL DEFAULT 3,
+    comment text COLLATE pg_catalog."default",
+    CONSTRAINT reviews_pkey PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS public.roles
+(
+    id serial NOT NULL,
+    role_name character varying(30) COLLATE pg_catalog."default" NOT NULL DEFAULT 'user'::character varying,
+    CONSTRAINT roles_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_name UNIQUE (role_name)
+);
+
+CREATE TABLE IF NOT EXISTS public.users
+(
+    id serial NOT NULL,
+    first_name character varying(64) COLLATE pg_catalog."default" NOT NULL,
+    last_name character varying(64) COLLATE pg_catalog."default" NOT NULL,
+    email character varying(64) COLLATE pg_catalog."default" NOT NULL,
+    password_hash character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    role_id integer NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT users_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_pass UNIQUE (password_hash),
+    CONSTRAINT users_email_key UNIQUE (email),
+    CONSTRAINT users_password_hash_key UNIQUE (password_hash)
+);
+
+ALTER TABLE IF EXISTS public.basket_items
+    ADD CONSTRAINT basket_items_basket_id_fkey FOREIGN KEY (basket_id)
+    REFERENCES public.baskets (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE;
+
+
+ALTER TABLE IF EXISTS public.basket_items
+    ADD CONSTRAINT basket_items_car_id_fkey FOREIGN KEY (car_id)
+    REFERENCES public.cars (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE;
+
+
+ALTER TABLE IF EXISTS public.baskets
+    ADD CONSTRAINT baskets_user_id_fkey FOREIGN KEY (user_id)
+    REFERENCES public.users (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS unique_user
+    ON public.baskets(user_id);
+
+
+ALTER TABLE IF EXISTS public.cars
+    ADD CONSTRAINT cars_model_id_fkey FOREIGN KEY (model_id)
+    REFERENCES public.models (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.images
+    ADD CONSTRAINT images_car_id_fkey FOREIGN KEY (car_id)
+    REFERENCES public.cars (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE;
+
+
+ALTER TABLE IF EXISTS public.logs
+    ADD CONSTRAINT logs_user_id_fkey FOREIGN KEY (user_id)
+    REFERENCES public.users (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.models
+    ADD CONSTRAINT models_brand_id_fkey FOREIGN KEY (brand_id)
+    REFERENCES public.brands (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.order_items
+    ADD CONSTRAINT order_items_car_id_fkey FOREIGN KEY (car_id)
+    REFERENCES public.cars (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.order_items
+    ADD CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id)
+    REFERENCES public.orders (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE;
+
+
+ALTER TABLE IF EXISTS public.orders
+    ADD CONSTRAINT user_order FOREIGN KEY (user_id)
+    REFERENCES public.users (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.reviews
+    ADD CONSTRAINT reviews_car_id_fkey FOREIGN KEY (car_id)
+    REFERENCES public.cars (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.reviews
+    ADD CONSTRAINT reviews_user_id_fkey FOREIGN KEY (user_id)
+    REFERENCES public.users (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.users
+    ADD CONSTRAINT users_role_id_fkey FOREIGN KEY (role_id)
+    REFERENCES public.roles (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE SET NULL;
 ```
 
 ## Связи между сущностями
