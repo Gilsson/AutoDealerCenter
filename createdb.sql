@@ -18,7 +18,7 @@ CREATE TABLE baskets
 CREATE TABLE brands
 (
     id SERIAL PRIMARY KEY,
-    brand_name character varying(50) NOT NULL UNIQUE
+    brand_name VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- Table: cars
@@ -43,7 +43,7 @@ CREATE TABLE coupon_types
 CREATE TABLE coupons
 (
     id SERIAL PRIMARY KEY,
-    code character varying(20) NOT NULL UNIQUE CHECK(length(code) > 0),
+    code VARCHAR(20) NOT NULL UNIQUE CHECK(length(code) > 0),
     discount_percentage numeric(5,2) NOT NULL CHECK (discount_percentage <= 100 AND discount_percentage > 0),
     expiration_date TIMESTAMPTZ NOT NULL CHECK (expiration_date > now())
 );
@@ -53,8 +53,8 @@ CREATE TABLE images
 (
     id SERIAL PRIMARY KEY,
     car_id integer REFERENCES cars (id) ON DELETE CASCADE,
-    image_url character varying(30) NOT NULL,
-    description character varying(30)
+    image_url VARCHAR(30) NOT NULL,
+    description VARCHAR(30)
 );
 
 -- Table: logs
@@ -62,7 +62,7 @@ CREATE TABLE logs
 (
     id SERIAL PRIMARY KEY,
     user_id integer NOT NULL REFERENCES users (id) ON DELETE NO ACTION,
-    action character varying(30),
+    action VARCHAR(30),
     "timestamp" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -70,7 +70,7 @@ CREATE TABLE logs
 CREATE TABLE models
 (
     id SERIAL PRIMARY KEY,
-    model_name character varying(100) NOT NULL,
+    model_name VARCHAR(100) NOT NULL,
     brand_id integer REFERENCES brands (id) ON DELETE NO ACTION
 );
 
@@ -99,9 +99,9 @@ CREATE TABLE payments
     id SERIAL PRIMARY KEY,
     order_id integer NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
     payment_date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    payment_method character varying(20) NOT NULL,
+    payment_method VARCHAR(20) NOT NULL,
     amount numeric(19,2) NOT NULL CHECK (amount > 0),
-    status character varying(9) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed'))
+    status VARCHAR(9) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed'))
 );
 
 -- Table: reviews
@@ -118,17 +118,17 @@ CREATE TABLE reviews
 CREATE TABLE roles
 (
     id SERIAL PRIMARY KEY,
-    role_name character varying(30) NOT NULL DEFAULT 'user' UNIQUE
+    role_name VARCHAR(30) NOT NULL DEFAULT 'user' UNIQUE
 );
 
 -- Table: users
 CREATE TABLE users
 (
     id SERIAL PRIMARY KEY,
-    first_name character varying(64) NOT NULL,
-    last_name character varying(64) NOT NULL,
-    email character varying(64) NOT NULL UNIQUE,
-    password_hash character varying(100) NOT NULL UNIQUE,
+    first_name VARCHAR(64) NOT NULL,
+    last_name VARCHAR(64) NOT NULL,
+    email VARCHAR(64) NOT NULL UNIQUE,
+    password_hash VARCHAR(100) NOT NULL UNIQUE,
     role_id integer NOT NULL REFERENCES roles (id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
