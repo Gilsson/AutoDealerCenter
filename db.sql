@@ -291,3 +291,46 @@ VALUES
 	'BMW X6'
 );
 
+CREATE TABLE IF NOT EXISTS payments(
+id SERIAL PRIMARY KEY,
+order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+payment_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+payment_method VARCHAR(20) NOT NULL,
+amount DECIMAL(19,2) NOT NULL,
+status VARCHAR(9) CHECK(status IN ('pending', 'completed', 'failed')) DEFAULT 'pending' NOT NULL
+);
+
+SELECT id FROM users;
+
+INSERT INTO 
+orders(
+user_id, price
+)
+VALUES (1, 1000.0), (2, 20000.0);
+
+SELECT id FROM orders; 
+
+INSERT INTO 
+payments(order_id, payment_method, amount)
+VALUES
+(
+1, 'card', 1000.0
+), (2, 'cash', 20000.0);
+SELECT * FROM cars;
+SELECT * FROM payments;
+
+CREATE TABLE IF NOT EXISTS coupon_types(
+	id SERIAL PRIMARY KEY,
+	coupon_id INTEGER NOT NULL REFERENCES coupons(id) ON DELETE CASCADE,
+	car_id INTEGER NOT NULL REFERENCES cars(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS coupons (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(10) NOT NULL,
+    discount_percentage DECIMAL(5, 2) CHECK (discount_percentage <= 100) NOT NULL,
+    from_date DATE NOT NULL,
+	to_date DATE NOT NULL,
+	expires BOOL NOT NULL
+);
+
