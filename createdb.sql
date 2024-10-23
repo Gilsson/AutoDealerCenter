@@ -35,8 +35,7 @@ CREATE TABLE coupon_types
 (
     id SERIAL PRIMARY KEY,
     coupon_id integer NOT NULL REFERENCES coupons (id) ON DELETE CASCADE,
-    car_id integer NOT NULL REFERENCES cars (id) ON DELETE CASCADE,
-    CONSTRAINT coupon_types_pkey PRIMARY KEY (id)
+    car_id integer NOT NULL REFERENCES cars (id) ON DELETE CASCADE
 );
 
 -- Table: coupons
